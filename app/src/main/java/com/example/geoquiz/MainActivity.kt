@@ -42,13 +42,14 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun GeoQuizApp(modifier: Modifier = Modifier) {
     var currentIndex by remember { mutableIntStateOf(0) }
-    val context = LocalContext.current // Нужен для вывода Toast
+    var isAnswered by remember { mutableStateOf(false) } // Флаг: ответил ли пользователь
+    val context = LocalContext.current
 
-    // Функция проверки ответа
     fun checkAnswer(userAnswer: Boolean) {
         val correctAnswer = questionBank[currentIndex].isTrue
         val message = if (userAnswer == correctAnswer) "Correct!" else "Incorrect!"
         Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+        isAnswered = true // Пользователь ответил, меняем флаг
     }
 
     Column(
@@ -58,15 +59,24 @@ fun GeoQuizApp(modifier: Modifier = Modifier) {
     ) {
         Text(text = questionBank[currentIndex].text, fontSize = 20.sp, textAlign = TextAlign.Center, modifier = Modifier.padding(bottom = 40.dp))
 
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Button(onClick = { checkAnswer(true) }) { Text("TRUE") }
-            Button(onClick = { checkAnswer(false) }) { Text("FALSE") }
+        // Пункт 2: Сделать невидимыми кнопки после ответа
+        if (!isAnswered) {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Button(onClick = { checkAnswer(true) }) { Text("TRUE") }
+                Button(onClick = { checkAnswer(false) }) { Text("FALSE") }
+            }
+        } else {
+            // Оставляем пустое место, чтобы интерфейс не прыгал
+            Spacer(modifier = Modifier.height(48.dp))
         }
 
         Spacer(modifier = Modifier.height(24.dp))
 
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-            Button(onClick = { currentIndex = (currentIndex + 1) % questionBank.size }) { Text("NEXT >") }
+            Button(onClick = {
+                currentIndex = (currentIndex + 1) % questionBank.size
+                isAnswered = false // Сбрасываем флаг для нового вопроса
+            }) { Text("NEXT >") }
         }
     }
 }
