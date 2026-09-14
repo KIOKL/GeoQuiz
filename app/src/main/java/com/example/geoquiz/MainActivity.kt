@@ -13,10 +13,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-// Структура нашего вопроса
 data class Question(val text: String, val isTrue: Boolean)
 
-// Список вопросов из задания
 val questionBank = listOf(
     Question("Canberra is the capital of Australia.", true),
     Question("The Pacific Ocean is larger than the Atlantic Ocean.", true),
@@ -31,7 +29,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            MaterialTheme { // Замени на свою тему, например GeoQuizTheme {
+            MaterialTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     GeoQuizApp(modifier = Modifier.padding(innerPadding))
                 }
@@ -42,35 +40,34 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun GeoQuizApp(modifier: Modifier = Modifier) {
+    // Храним индекс текущего вопроса (от 0 до 5)
+    var currentIndex by remember { mutableIntStateOf(0) }
+
     Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(24.dp),
+        modifier = modifier.fillMaxSize().padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        // Текст вопроса
+        // Берем вопрос по текущему индексу
         Text(
-            text = questionBank[0].text, // Пока показываем только первый вопрос
+            text = questionBank[currentIndex].text,
             fontSize = 20.sp,
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(bottom = 40.dp)
         )
 
-        // Кнопки True и False
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Button(onClick = { /* Пока ничего */ }) { Text("TRUE") }
-            Button(onClick = { /* Пока ничего */ }) { Text("FALSE") }
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            Button(onClick = { }) { Text("TRUE") }
+            Button(onClick = { }) { Text("FALSE") }
         }
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Кнопка Next
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-            Button(onClick = { /* Пока ничего */ }) { Text("NEXT >") }
+            Button(onClick = {
+                // Увеличиваем индекс. Если дошли до конца — возвращаемся в начало (пока что)
+                currentIndex = (currentIndex + 1) % questionBank.size
+            }) { Text("NEXT >") }
         }
     }
 }
