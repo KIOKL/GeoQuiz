@@ -43,15 +43,42 @@ class MainActivity : ComponentActivity() {
 fun GeoQuizApp(modifier: Modifier = Modifier) {
     var currentIndex by remember { mutableIntStateOf(0) }
     var isAnswered by remember { mutableStateOf(false) }
-    val context = LocalContext.current
+    var correctAnswersCount by remember { mutableIntStateOf(0) } // Счетчик правильных ответов
+    var showResultDialog by remember { mutableStateOf(false) } // Показывать ли финальную панель
 
-    val isLastQuestion = currentIndex == questionBank.size - 1 // Проверка на последний вопрос
+    val context = LocalContext.current
+    val isLastQuestion = currentIndex == questionBank.size - 1
 
     fun checkAnswer(userAnswer: Boolean) {
         val correctAnswer = questionBank[currentIndex].isTrue
-        val message = if (userAnswer == correctAnswer) "Correct!" else "Incorrect!"
-        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+
+        if (userAnswer == correctAnswer) {
+            correctAnswersCount++
+            Toast.makeText(context, "Correct!", Toast.LENGTH_SHORT).show()
+        } else {
+            Toast.makeText(context, "Incorrect!", Toast.LENGTH_SHORT).show()
+        }
+
         isAnswered = true
+
+        // Если вопрос последний — показываем панель с результатом
+        if (isLastQuestion) {
+            showResultDialog = true
+        }
+    }
+
+    // Всплывающая панель результатов (Требование 4)
+    if (showResultDialog) {
+        AlertDialog(
+            onDismissRequest = { /* Не даем закрыть кликом мимо */ },
+            title = { Text("Результат теста") },
+            text = { Text("Вы ответили правильно на $correctAnswersCount из ${questionBank.size} вопросов!") },
+            confirmButton = {
+                Button(onClick = { showResultDialog = false }) {
+                    Text("OK")
+                }
+            }
+        )
     }
 
     Column(
@@ -72,7 +99,6 @@ fun GeoQuizApp(modifier: Modifier = Modifier) {
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Пункт 3: Прячем кнопку Next, если это последний вопрос И на него уже ответили
         if (!(isLastQuestion && isAnswered)) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
                 Button(onClick = {
