@@ -1,6 +1,7 @@
 package com.example.geoquiz
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -9,12 +10,12 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 data class Question(val text: String, val isTrue: Boolean)
-
 val questionBank = listOf(
     Question("Canberra is the capital of Australia.", true),
     Question("The Pacific Ocean is larger than the Atlantic Ocean.", true),
@@ -40,34 +41,32 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun GeoQuizApp(modifier: Modifier = Modifier) {
-    // Храним индекс текущего вопроса (от 0 до 5)
     var currentIndex by remember { mutableIntStateOf(0) }
+    val context = LocalContext.current // Нужен для вывода Toast
+
+    // Функция проверки ответа
+    fun checkAnswer(userAnswer: Boolean) {
+        val correctAnswer = questionBank[currentIndex].isTrue
+        val message = if (userAnswer == correctAnswer) "Correct!" else "Incorrect!"
+        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+    }
 
     Column(
         modifier = modifier.fillMaxSize().padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        // Берем вопрос по текущему индексу
-        Text(
-            text = questionBank[currentIndex].text,
-            fontSize = 20.sp,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.padding(bottom = 40.dp)
-        )
+        Text(text = questionBank[currentIndex].text, fontSize = 20.sp, textAlign = TextAlign.Center, modifier = Modifier.padding(bottom = 40.dp))
 
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Button(onClick = { }) { Text("TRUE") }
-            Button(onClick = { }) { Text("FALSE") }
+            Button(onClick = { checkAnswer(true) }) { Text("TRUE") }
+            Button(onClick = { checkAnswer(false) }) { Text("FALSE") }
         }
 
         Spacer(modifier = Modifier.height(24.dp))
 
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-            Button(onClick = {
-                // Увеличиваем индекс. Если дошли до конца — возвращаемся в начало (пока что)
-                currentIndex = (currentIndex + 1) % questionBank.size
-            }) { Text("NEXT >") }
+            Button(onClick = { currentIndex = (currentIndex + 1) % questionBank.size }) { Text("NEXT >") }
         }
     }
 }
