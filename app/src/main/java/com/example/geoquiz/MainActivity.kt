@@ -42,14 +42,16 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun GeoQuizApp(modifier: Modifier = Modifier) {
     var currentIndex by remember { mutableIntStateOf(0) }
-    var isAnswered by remember { mutableStateOf(false) } // Флаг: ответил ли пользователь
+    var isAnswered by remember { mutableStateOf(false) }
     val context = LocalContext.current
+
+    val isLastQuestion = currentIndex == questionBank.size - 1 // Проверка на последний вопрос
 
     fun checkAnswer(userAnswer: Boolean) {
         val correctAnswer = questionBank[currentIndex].isTrue
         val message = if (userAnswer == correctAnswer) "Correct!" else "Incorrect!"
         Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-        isAnswered = true // Пользователь ответил, меняем флаг
+        isAnswered = true
     }
 
     Column(
@@ -59,24 +61,27 @@ fun GeoQuizApp(modifier: Modifier = Modifier) {
     ) {
         Text(text = questionBank[currentIndex].text, fontSize = 20.sp, textAlign = TextAlign.Center, modifier = Modifier.padding(bottom = 40.dp))
 
-        // Пункт 2: Сделать невидимыми кнопки после ответа
         if (!isAnswered) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 Button(onClick = { checkAnswer(true) }) { Text("TRUE") }
                 Button(onClick = { checkAnswer(false) }) { Text("FALSE") }
             }
         } else {
-            // Оставляем пустое место, чтобы интерфейс не прыгал
             Spacer(modifier = Modifier.height(48.dp))
         }
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-            Button(onClick = {
-                currentIndex = (currentIndex + 1) % questionBank.size
-                isAnswered = false // Сбрасываем флаг для нового вопроса
-            }) { Text("NEXT >") }
+        // Пункт 3: Прячем кнопку Next, если это последний вопрос И на него уже ответили
+        if (!(isLastQuestion && isAnswered)) {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                Button(onClick = {
+                    if (!isLastQuestion) {
+                        currentIndex++
+                        isAnswered = false
+                    }
+                }) { Text("NEXT >") }
+            }
         }
     }
 }
